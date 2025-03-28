@@ -61,4 +61,35 @@ export class BeneficiaryManagementService {
 
         return { message: 'Beneficiary deleted successfully' };
     }
+
+    async saveBeneficiaryExcelData(sheetData: any[]): Promise<{ message: string; count: number }> {
+        if (!sheetData || sheetData.length === 0) {
+            throw new BadRequestException('Excel file contains no data');
+        }
+    
+        // Mapping sheet data to beneficiary DTO
+        const beneficiaryData = sheetData.map(row => {
+            if (!row.name || !row.beneficiaryNo || !row.mobileNo) {
+                throw new BadRequestException('Each beneficiary must have a name, beneficiaryNo, and mobileNo');
+            }
+    
+            return {
+                name: row.name,
+                beneficiaryNo: row.beneficiaryNo,
+                scheme: row.scheme || '',
+                mobileNo: row.mobileNo,
+                district: row.district || '',
+                taluka: row.taluka || '',
+                village: row.village || '',
+                pumpCapacity: row.pumpCapacity || '',
+                head: row.head || '',
+                billedDate: row.billedDate ? new Date(row.billedDate) : null,
+                invoiceNo: row.invoiceNo || '',
+            } as CreateBeneficiaryDto;
+        });
+    
+        const result = await this.beneficiaryModel.insertMany(beneficiaryData);
+        
+        return { message: 'Beneficiary data saved successfully', count: result.length };
+    }
 }
