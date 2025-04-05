@@ -2,6 +2,11 @@ import { IsString, IsNotEmpty, IsPhoneNumber, IsDate, IsOptional, IsDefined, IsN
 import { Type } from 'class-transformer';
 
 export class CreateBeneficiaryDto {
+  @IsDefined({ message: 'Company name is required' })
+  @IsNotEmpty({ message: 'Company name cannot be empty' })
+  @IsString({ message: 'Company name must be a valid string' })
+  companyName: string;
+
   @IsDefined({ message: 'Name is required' })
   @IsNotEmpty({ message: 'Name cannot be empty' })
   @IsString({ message: 'Name must be a valid string' })

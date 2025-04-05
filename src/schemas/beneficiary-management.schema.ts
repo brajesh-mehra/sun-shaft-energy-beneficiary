@@ -4,6 +4,9 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class BeneficiaryManagement extends Document {
   @Prop({ required: true })
+  companyName: string;
+
+  @Prop({ required: true })
   name: string;
 
   @Prop({ required: true })

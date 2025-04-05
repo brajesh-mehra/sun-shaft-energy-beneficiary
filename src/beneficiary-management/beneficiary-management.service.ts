@@ -23,6 +23,7 @@ export class BeneficiaryManagementService {
         if (filters.search) {
             andConditions.push({
                 $or: [
+                    { companyName: { $regex: filters.search, $options: 'i' } },
                     { name: { $regex: filters.search, $options: 'i' } },
                     { mobileNo: { $regex: filters.search, $options: 'i' } },
                     { beneficiaryNo: { $regex: filters.search, $options: 'i' } },
@@ -31,6 +32,10 @@ export class BeneficiaryManagementService {
             });
         }
     
+        if (filters.companyName) {
+            andConditions.push({ companyName: { $regex: filters.companyName, $options: 'i' } });
+        }
+
         if (filters.district) {
             andConditions.push({ district: { $regex: filters.district, $options: 'i' } });
         }
@@ -107,11 +112,12 @@ export class BeneficiaryManagementService {
     
         // Mapping sheet data to beneficiary DTO
         const beneficiaryData = sheetData.map(row => {
-            if (!row.name || !row.beneficiaryNo || !row.mobileNo) {
-                throw new BadRequestException('Each beneficiary must have a name, beneficiaryNo, and mobileNo');
+            if (!row.companyName || !row.name || !row.beneficiaryNo || !row.mobileNo) {
+                throw new BadRequestException('Each beneficiary must have a companyName, name, beneficiaryNo, and mobileNo');
             }
     
             return {
+                companyName: row.companyName,
                 name: row.name,
                 beneficiaryNo: row.beneficiaryNo,
                 scheme: row.scheme || '',
