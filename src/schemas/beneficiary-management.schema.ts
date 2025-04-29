@@ -1,6 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+export enum DeliveryStatus {
+  PENDING = 'PENDING',
+  DELIVERED = 'DELIVERED',
+  PARTIALLY_DELIVERED = 'PARTIALLY_DELIVERED',
+  FAILED = 'FAILED',
+}
+
 @Schema({ timestamps: true })
 export class BeneficiaryManagement extends Document {
   @Prop({ required: true })
@@ -44,6 +51,13 @@ export class BeneficiaryManagement extends Document {
 
   @Prop({ default: false })
   isDeleted: boolean;
+
+  @Prop({ 
+    type: String, 
+    enum: DeliveryStatus, 
+    default: DeliveryStatus.PENDING 
+  })
+  deliveryStatus: DeliveryStatus;
 }
 
 // Generate Schema

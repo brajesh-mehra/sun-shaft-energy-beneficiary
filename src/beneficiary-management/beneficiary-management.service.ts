@@ -51,6 +51,10 @@ export class BeneficiaryManagementService {
         if (filters.scheme) {
             andConditions.push({ scheme: { $regex: filters.scheme, $options: 'i' } });
         }
+
+        if(filters.deliveryStatus){
+            andConditions.push({ deliveryStatus: { $regex: filters.deliveryStatus, $options: 'i' } });
+        }
     
         if (filters.districtTalukaFilter && Object.keys(filters.districtTalukaFilter).length > 0) {
             const districtTalukaConditions: any[] = [];
