@@ -10,7 +10,7 @@ export class BeneficiaryManagementService {
     constructor(
         @InjectModel(BeneficiaryManagement.name) private beneficiaryModel: Model<BeneficiaryManagement>
     ) { }
-    
+
     async create(createBeneficiaryDto: CreateBeneficiaryDto): Promise<BeneficiaryManagement> {
         const beneficiary = new this.beneficiaryModel(createBeneficiaryDto);
         return beneficiary.save();
@@ -19,7 +19,7 @@ export class BeneficiaryManagementService {
     async findAll(filters: any): Promise<BeneficiaryManagement[]> {
         const query: any = { isDeleted: { $ne: true } };
         const andConditions: any[] = [];
-    
+
         if (filters.search) {
             andConditions.push({
                 $or: [
@@ -31,7 +31,7 @@ export class BeneficiaryManagementService {
                 ]
             });
         }
-    
+
         if (filters.companyName) {
             andConditions.push({ companyName: { $regex: filters.companyName, $options: 'i' } });
         }
@@ -39,26 +39,26 @@ export class BeneficiaryManagementService {
         if (filters.district) {
             andConditions.push({ district: { $regex: filters.district, $options: 'i' } });
         }
-    
+
         if (filters.taluka) {
             andConditions.push({ taluka: { $regex: filters.taluka, $options: 'i' } });
         }
-    
+
         if (filters.village) {
             andConditions.push({ village: { $regex: filters.village, $options: 'i' } });
         }
-    
+
         if (filters.scheme) {
             andConditions.push({ scheme: { $regex: filters.scheme, $options: 'i' } });
         }
 
-        if(filters.deliveryStatus){
+        if (filters.deliveryStatus) {
             andConditions.push({ deliveryStatus: { $regex: filters.deliveryStatus, $options: 'i' } });
         }
-    
+
         if (filters.districtTalukaFilter && Object.keys(filters.districtTalukaFilter).length > 0) {
             const districtTalukaConditions: any[] = [];
-    
+
             for (const [district, talukas] of Object.entries(filters.districtTalukaFilter)) {
                 if (district && Array.isArray(talukas) && talukas.length > 0) {
                     districtTalukaConditions.push({
@@ -67,16 +67,16 @@ export class BeneficiaryManagementService {
                     });
                 }
             }
-    
+
             if (districtTalukaConditions.length > 0) {
                 andConditions.push({ $or: districtTalukaConditions });
             }
         }
-    
+
         if (andConditions.length > 0) {
             query.$and = andConditions;
         }
-    
+
         let sortOptions: { [key: string]: SortOrder } = { createdAt: -1 };
         if (filters.sort) {
             const allowedSortFields = ['isActive', 'district', 'taluka', 'billedDate'];
@@ -84,8 +84,23 @@ export class BeneficiaryManagementService {
                 sortOptions = { [filters.sort]: filters.order === 'asc' ? 1 : -1 };
             }
         }
-    
+
         return this.beneficiaryModel.find(query).sort(sortOptions).exec();
+    }
+
+    async getDashboardStatistics() {
+        const deliveredCount = await this.beneficiaryModel.countDocuments({
+            deliveryStatus: 'DELIVERED',
+        });
+
+        const waitingCount = await this.beneficiaryModel.countDocuments({
+            deliveryStatus: { $ne: 'DELIVERED' },
+        });
+
+        return {
+            deliveredBeneficiaries: deliveredCount,
+            waitingBeneficiaries: waitingCount,
+        };
     }
 
     async findOne(id: string): Promise<BeneficiaryManagement | null> {
@@ -113,13 +128,13 @@ export class BeneficiaryManagementService {
         if (!sheetData || sheetData.length === 0) {
             throw new BadRequestException('Excel file contains no data');
         }
-    
+
         // Mapping sheet data to beneficiary DTO
         const beneficiaryData = sheetData.map(row => {
             if (!row.companyName || !row.name || !row.beneficiaryNo || !row.mobileNo) {
                 throw new BadRequestException('Each beneficiary must have a companyName, name, beneficiaryNo, and mobileNo');
             }
-    
+
             return {
                 companyName: row.companyName,
                 name: row.name,
@@ -135,9 +150,9 @@ export class BeneficiaryManagementService {
                 invoiceNo: row.invoiceNo || '',
             } as CreateBeneficiaryDto;
         });
-    
+
         const result = await this.beneficiaryModel.insertMany(beneficiaryData);
-        
+
         return { message: 'Beneficiary data saved successfully', count: result.length };
     }
 }

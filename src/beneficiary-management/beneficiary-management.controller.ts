@@ -15,6 +15,11 @@ export class BeneficiaryManagementController {
         return this.beneficiaryManagementService.findAll(filters);
     }
 
+    @MessagePattern('getDashboardStatistics')
+    async getDashboardStatistics() {
+        return this.beneficiaryManagementService.getDashboardStatistics();
+    }
+
     @MessagePattern('getBeneficiary')
     async getBeneficiary(@Payload() { id }: { id: string }) {
         if (!isValidObjectId(id)) {
